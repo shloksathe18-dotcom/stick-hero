@@ -23,6 +23,15 @@ body {
 
 canvas {
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+  display: block;
+  max-width: 100%;
+  max-height: 100vh;
+}
+
+@media (max-width: 768px) {
+  body {
+    cursor: default;
+  }
 }
 
 .container {
@@ -74,20 +83,41 @@ canvas {
 }
 
 #introduction {
-  width: 200px;
-  height: 150px;
+  width: 220px;
+  min-height: 100px;
   position: absolute;
   font-weight: 600;
-  font-size: 0.8em;
+  font-size: 0.85em;
   font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
   text-align: center;
   transition: opacity 2s;
-  background: rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.95);
   padding: 20px;
   border-radius: 15px;
   box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
   animation: bounce 2s ease-in-out infinite;
   color: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.desktop-instruction {
+  display: inline;
+}
+
+.mobile-instruction {
+  display: none;
+}
+
+@media (max-width: 768px), (hover: none) {
+  .desktop-instruction {
+    display: none;
+  }
+  
+  .mobile-instruction {
+    display: inline;
+  }
 }
 
 @keyframes bounce {
@@ -97,8 +127,9 @@ canvas {
 
 @media (max-width: 768px) {
   #introduction {
-    font-size: 0.9em;
-    width: 250px;
+    font-size: 1em;
+    width: 260px;
+    padding: 25px;
   }
 }
 
@@ -396,7 +427,10 @@ canvas {
   <div class="container">
     <div id="score"></div>
     <canvas id="game" width="375" height="375"></canvas>
-    <div id="introduction">Hold down the mouse to stretch out a stick</div>
+    <div id="introduction">
+      <span class="desktop-instruction">Hold down the mouse to stretch out a stick</span>
+      <span class="mobile-instruction">Tap and hold to stretch out a stick</span>
+    </div>
     <div id="perfect">DOUBLE SCORE</div>
     <button id="restart">RESTART</button>
   </div>
@@ -567,10 +601,22 @@ const heroWidth = 17;
 const heroHeight = 30;
 
 const canvas = document.getElementById("game");
+
+// Detect if mobile device
+const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                 (window.innerWidth <= 768);
+
+// Set canvas size
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
 const ctx = canvas.getContext("2d");
+
+// Update instruction text based on device
+if (isMobile) {
+  document.querySelector('.desktop-instruction').style.display = 'none';
+  document.querySelector('.mobile-instruction').style.display = 'inline';
+}
 
 const introductionElement = document.getElementById("introduction");
 const perfectElement = document.getElementById("perfect");
@@ -706,6 +752,22 @@ window.addEventListener("resize", function (event) {
   canvas.height = window.innerHeight;
   draw();
 });
+
+// Prevent accidental page refresh on mobile
+let touchStartY = 0;
+document.addEventListener('touchstart', function(e) {
+  touchStartY = e.touches[0].clientY;
+}, { passive: false });
+
+document.addEventListener('touchmove', function(e) {
+  const touchY = e.touches[0].clientY;
+  const touchDiff = touchY - touchStartY;
+  
+  // Prevent pull-to-refresh
+  if (touchDiff > 0 && window.scrollY === 0) {
+    e.preventDefault();
+  }
+}, { passive: false });
 
 window.requestAnimationFrame(animate);
 
