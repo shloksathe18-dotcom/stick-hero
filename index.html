@@ -1,1 +1,1145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stick Hero Game</title>
+  <style>
+html,
+body {
+  height: 100%;
+  margin: 0;
+}
 
+body {
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  cursor: pointer;
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+canvas {
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+}
+
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+}
+
+#score {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  font-size: 2em;
+  font-weight: 900;
+  z-index: 10;
+  color: #333;
+  text-shadow: 
+    2px 2px 0 #fff,
+    -2px -2px 0 #fff,
+    2px -2px 0 #fff,
+    -2px 2px 0 #fff,
+    0 0 10px rgba(255, 215, 0, 0.5);
+  animation: scoreFloat 3s ease-in-out infinite;
+  transition: transform 0.3s ease;
+}
+
+#score.score-update {
+  animation: scorePop 0.5s ease-out;
+}
+
+@keyframes scoreFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-5px); }
+}
+
+@keyframes scorePop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.3) rotate(5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@media (max-width: 768px) {
+  #score {
+    font-size: 1.5em;
+    top: 15px;
+    right: 15px;
+  }
+}
+
+#introduction {
+  width: 200px;
+  height: 150px;
+  position: absolute;
+  font-weight: 600;
+  font-size: 0.8em;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  text-align: center;
+  transition: opacity 2s;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 20px;
+  border-radius: 15px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+  animation: bounce 2s ease-in-out infinite;
+  color: #333;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@media (max-width: 768px) {
+  #introduction {
+    font-size: 0.9em;
+    width: 250px;
+  }
+}
+
+#restart {
+  width: 160px;
+  height: 60px;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border-radius: 30px;
+  color: white;
+  background: linear-gradient(180deg, #ff5555 0%, #ff0000 50%, #cc0000 100%);
+  border: 4px solid #fff;
+  font-weight: 900;
+  font-size: 1.4em;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  display: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 
+    0 6px 0 #990000,
+    0 8px 20px rgba(0, 0, 0, 0.4);
+  text-shadow: 
+    2px 2px 4px rgba(0, 0, 0, 0.8);
+  letter-spacing: 3px;
+  animation: buttonAppear 0.5s ease-out;
+  z-index: 100;
+}
+
+#restart:hover {
+  transform: translate(-50%, -50%) translateY(-3px);
+  box-shadow: 
+    0 8px 0 #990000,
+    0 12px 25px rgba(0, 0, 0, 0.5);
+}
+
+#restart:active {
+  transform: translate(-50%, -50%) translateY(2px);
+  box-shadow: 
+    0 2px 0 #990000,
+    0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+@keyframes buttonAppear {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0) rotateZ(180deg);
+  }
+  60% {
+    transform: translate(-50%, -50%) scale(1.15) rotateZ(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotateZ(0deg);
+  }
+}
+
+@media (max-width: 768px) {
+  #restart {
+    width: 140px;
+    height: 55px;
+    font-size: 1.2em;
+    letter-spacing: 2px;
+  }
+}
+
+#perfect {
+  position: absolute;
+  opacity: 0;
+  transition: opacity 0.3s;
+  font-size: 2em;
+  font-weight: 900;
+  color: #FFD700;
+  text-shadow: 
+    0 0 10px #FFD700,
+    0 0 20px #FFD700,
+    0 0 30px #FF6B00,
+    2px 2px 5px rgba(0, 0, 0, 0.5);
+  animation: perfectPulse 0.5s ease-in-out;
+}
+
+@keyframes perfectPulse {
+  0%, 100% { transform: scale(1); }
+  25% { transform: scale(1.3) rotate(-5deg); }
+  75% { transform: scale(1.3) rotate(5deg); }
+}
+
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  transition: opacity 0.5s ease-out;
+  overflow: hidden;
+}
+
+#loading-screen.hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-content {
+  text-align: center;
+  z-index: 2;
+}
+
+.stick-hero-logo {
+  position: relative;
+  margin-bottom: 50px;
+}
+
+.stick-animation {
+  width: 4px;
+  height: 0;
+  background: white;
+  margin: 0 auto 20px;
+  animation: growStick 1.5s ease-out forwards;
+  border-radius: 2px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+.stick-hero-logo h1 {
+  color: white;
+  font-size: 4em;
+  margin: 0;
+  font-weight: 900;
+  letter-spacing: 5px;
+  animation: glowText 2s ease-in-out infinite, slideUp 1s ease-out;
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+}
+
+@media (max-width: 768px) {
+  .stick-hero-logo h1 {
+    font-size: 2.5em;
+    letter-spacing: 3px;
+  }
+}
+
+.loading-bar-container {
+  margin: 40px auto;
+  width: 300px;
+}
+
+@media (max-width: 768px) {
+  .loading-bar-container {
+    width: 250px;
+    margin: 30px auto;
+  }
+}
+
+.loading-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.loading-progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #fff, #ffd700, #fff);
+  background-size: 200% 100%;
+  border-radius: 10px;
+  animation: loadProgress 3s ease-out forwards, shimmer 1.5s linear infinite;
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.8);
+}
+
+.loading-percentage {
+  color: white;
+  font-size: 1.5em;
+  margin-top: 15px;
+  font-weight: 700;
+  animation: fadeIn 0.5s ease-in;
+}
+
+.creator-text {
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 1.3em;
+  margin-top: 30px;
+  animation: fadeIn 2s ease-in;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+@media (max-width: 768px) {
+  .creator-text {
+    font-size: 1.1em;
+    letter-spacing: 1px;
+  }
+}
+
+.floating-sticks {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  z-index: 1;
+}
+
+.float-stick {
+  position: absolute;
+  width: 3px;
+  height: 80px;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 2px;
+}
+
+.float-stick:nth-child(1) {
+  left: 20%;
+  top: 20%;
+  animation: floatStick 4s ease-in-out infinite;
+}
+
+.float-stick:nth-child(2) {
+  right: 15%;
+  top: 60%;
+  animation: floatStick 5s ease-in-out infinite 1s;
+}
+
+.float-stick:nth-child(3) {
+  left: 70%;
+  bottom: 20%;
+  animation: floatStick 6s ease-in-out infinite 2s;
+}
+
+@keyframes growStick {
+  0% { height: 0; }
+  100% { height: 100px; }
+}
+
+@keyframes slideUp {
+  0% { opacity: 0; transform: translateY(30px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes glowText {
+  0%, 100% { text-shadow: 0 0 20px rgba(255, 255, 255, 0.5); }
+  50% { text-shadow: 0 0 30px rgba(255, 255, 255, 0.8), 0 0 40px rgba(255, 255, 255, 0.6); }
+}
+
+@keyframes loadProgress {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes floatStick {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-30px) rotate(10deg); }
+}
+
+  </style>
+</head>
+<body>
+  <div id="loading-screen">
+    <div class="loading-content">
+      <div class="stick-hero-logo">
+        <div class="stick-animation"></div>
+        <h1>STICK HERO</h1>
+      </div>
+      <div class="loading-bar-container">
+        <div class="loading-bar">
+          <div class="loading-progress"></div>
+        </div>
+        <div class="loading-percentage">0%</div>
+      </div>
+      <p class="creator-text">Game made by Shlok</p>
+    </div>
+    <div class="floating-sticks">
+      <div class="float-stick"></div>
+      <div class="float-stick"></div>
+      <div class="float-stick"></div>
+    </div>
+  </div>
+
+  <div class="container">
+    <div id="score"></div>
+    <canvas id="game" width="375" height="375"></canvas>
+    <div id="introduction">Hold down the mouse to stretch out a stick</div>
+    <div id="perfect">DOUBLE SCORE</div>
+    <button id="restart">RESTART</button>
+  </div>
+
+
+
+  <script>
+// Loading screen with progress
+window.addEventListener('load', function() {
+  const progressBar = document.querySelector('.loading-progress');
+  const percentage = document.querySelector('.loading-percentage');
+  let progress = 0;
+  
+  const interval = setInterval(function() {
+    progress += Math.random() * 15;
+    if (progress > 100) progress = 100;
+    
+    progressBar.style.width = progress + '%';
+    percentage.textContent = Math.floor(progress) + '%';
+    
+    if (progress >= 100) {
+      clearInterval(interval);
+      setTimeout(function() {
+        document.getElementById('loading-screen').classList.add('hidden');
+      }, 500);
+    }
+  }, 150);
+});
+
+// Sound effects using Web Audio API
+const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+
+function playSound(frequency, duration, type = 'sine') {
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  oscillator.frequency.value = frequency;
+  oscillator.type = type;
+  
+  gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + duration);
+}
+
+function playStretchSound() {
+  playSound(200, 0.1, 'sine');
+}
+
+function playLandSound() {
+  playSound(400, 0.15, 'square');
+}
+
+function playPerfectSound() {
+  playSound(800, 0.2, 'sine');
+  setTimeout(() => playSound(1000, 0.2, 'sine'), 100);
+}
+
+function playFallSound() {
+  playSound(150, 0.5, 'sawtooth');
+}
+
+function playWalkSound() {
+  playSound(300, 0.05, 'square');
+}
+
+function playGameOverSound() {
+  // Funny "wah wah wah" game over sound
+  const oscillator = audioContext.createOscillator();
+  const gainNode = audioContext.createGain();
+  
+  oscillator.connect(gainNode);
+  gainNode.connect(audioContext.destination);
+  
+  oscillator.type = 'sawtooth';
+  
+  // Create the "wah wah" effect by changing frequency
+  oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+  oscillator.frequency.exponentialRampToValueAtTime(200, audioContext.currentTime + 0.3);
+  oscillator.frequency.exponentialRampToValueAtTime(150, audioContext.currentTime + 0.6);
+  oscillator.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 1);
+  
+  gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+  gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+  
+  oscillator.start(audioContext.currentTime);
+  oscillator.stop(audioContext.currentTime + 1);
+  
+  // Add a funny "boing" at the end
+  setTimeout(() => {
+    const boing = audioContext.createOscillator();
+    const boingGain = audioContext.createGain();
+    
+    boing.connect(boingGain);
+    boingGain.connect(audioContext.destination);
+    
+    boing.type = 'sine';
+    boing.frequency.setValueAtTime(600, audioContext.currentTime);
+    boing.frequency.exponentialRampToValueAtTime(100, audioContext.currentTime + 0.2);
+    
+    boingGain.gain.setValueAtTime(0.3, audioContext.currentTime);
+    boingGain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    
+    boing.start(audioContext.currentTime);
+    boing.stop(audioContext.currentTime + 0.2);
+  }, 800);
+}
+
+// Vibration function
+function vibrate(pattern) {
+  if ('vibrate' in navigator) {
+    navigator.vibrate(pattern);
+  }
+}
+
+// Extend the base functionality of JavaScript
+Array.prototype.last = function () {
+  return this[this.length - 1];
+};
+
+// A sinus function that acceps degrees instead of radians
+Math.sinus = function (degree) {
+  return Math.sin((degree / 180) * Math.PI);
+};
+
+// Game data
+let phase = "waiting";
+let lastTimestamp;
+
+let heroX;
+let heroY;
+let sceneOffset;
+
+let platforms = [];
+let sticks = [];
+let trees = [];
+
+let score = 0;
+
+// Configuration
+const canvasWidth = 375;
+const canvasHeight = 375;
+const platformHeight = 100;
+const heroDistanceFromEdge = 10;
+const paddingX = 100;
+const perfectAreaSize = 10;
+
+const backgroundSpeedMultiplier = 0.2;
+
+const hill1BaseHeight = 100;
+const hill1Amplitude = 10;
+const hill1Stretch = 1;
+const hill2BaseHeight = 70;
+const hill2Amplitude = 20;
+const hill2Stretch = 0.5;
+
+const stretchingSpeed = 4;
+const turningSpeed = 4;
+const walkingSpeed = 4;
+const transitioningSpeed = 2;
+const fallingSpeed = 2;
+
+const heroWidth = 17;
+const heroHeight = 30;
+
+const canvas = document.getElementById("game");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+const ctx = canvas.getContext("2d");
+
+const introductionElement = document.getElementById("introduction");
+const perfectElement = document.getElementById("perfect");
+const restartButton = document.getElementById("restart");
+const scoreElement = document.getElementById("score");
+
+resetGame();
+
+function resetGame() {
+  phase = "waiting";
+  lastTimestamp = undefined;
+  sceneOffset = 0;
+  score = 0;
+
+  introductionElement.style.opacity = 1;
+  perfectElement.style.opacity = 0;
+  restartButton.style.display = "none";
+  scoreElement.innerText = score;
+
+  platforms = [{ x: 50, w: 50 }];
+  generatePlatform();
+  generatePlatform();
+  generatePlatform();
+  generatePlatform();
+
+  sticks = [{ x: platforms[0].x + platforms[0].w, length: 0, rotation: 0 }];
+
+  trees = [];
+  generateTree();
+  generateTree();
+  generateTree();
+  generateTree();
+  generateTree();
+  generateTree();
+  generateTree();
+  generateTree();
+  generateTree();
+  generateTree();
+
+  heroX = platforms[0].x + platforms[0].w - heroDistanceFromEdge;
+  heroY = 0;
+
+  draw();
+}
+
+function generateTree() {
+  const minimumGap = 30;
+  const maximumGap = 150;
+
+  const lastTree = trees[trees.length - 1];
+  let furthestX = lastTree ? lastTree.x : 0;
+
+  const x =
+    furthestX +
+    minimumGap +
+    Math.floor(Math.random() * (maximumGap - minimumGap));
+
+  const treeColors = ["#6D8821", "#8FAC34", "#98B333"];
+  const color = treeColors[Math.floor(Math.random() * 3)];
+
+  trees.push({ x, color });
+}
+
+function generatePlatform() {
+  const minimumGap = 40;
+  const maximumGap = 200;
+  const minimumWidth = 20;
+  const maximumWidth = 100;
+
+  const lastPlatform = platforms[platforms.length - 1];
+  let furthestX = lastPlatform.x + lastPlatform.w;
+
+  const x =
+    furthestX +
+    minimumGap +
+    Math.floor(Math.random() * (maximumGap - minimumGap));
+  const w =
+    minimumWidth + Math.floor(Math.random() * (maximumWidth - minimumWidth));
+
+  platforms.push({ x, w });
+}
+
+window.addEventListener("keydown", function (event) {
+  if (event.key == " ") {
+    event.preventDefault();
+    resetGame();
+    return;
+  }
+});
+
+// Mouse events
+window.addEventListener("mousedown", function (event) {
+  if (phase == "waiting") {
+    lastTimestamp = undefined;
+    introductionElement.style.opacity = 0;
+    phase = "stretching";
+    playStretchSound();
+    vibrate(50);
+    window.requestAnimationFrame(animate);
+  }
+});
+
+window.addEventListener("mouseup", function (event) {
+  if (phase == "stretching") {
+    phase = "turning";
+    vibrate(30);
+  }
+});
+
+// Touch events for mobile
+window.addEventListener("touchstart", function (event) {
+  event.preventDefault();
+  if (phase == "waiting") {
+    lastTimestamp = undefined;
+    introductionElement.style.opacity = 0;
+    phase = "stretching";
+    playStretchSound();
+    vibrate(50);
+    window.requestAnimationFrame(animate);
+  }
+}, { passive: false });
+
+window.addEventListener("touchend", function (event) {
+  event.preventDefault();
+  if (phase == "stretching") {
+    phase = "turning";
+    vibrate(30);
+  }
+}, { passive: false });
+
+window.addEventListener("resize", function (event) {
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+  draw();
+});
+
+window.requestAnimationFrame(animate);
+
+function animate(timestamp) {
+  if (!lastTimestamp) {
+    lastTimestamp = timestamp;
+    window.requestAnimationFrame(animate);
+    return;
+  }
+
+  switch (phase) {
+    case "waiting":
+      return;
+    case "stretching": {
+      const oldLength = sticks.last().length;
+      sticks.last().length += (timestamp - lastTimestamp) / stretchingSpeed;
+      if (Math.floor(oldLength / 10) < Math.floor(sticks.last().length / 10)) {
+        playStretchSound();
+      }
+      break;
+    }
+    case "turning": {
+      sticks.last().rotation += (timestamp - lastTimestamp) / turningSpeed;
+
+      if (sticks.last().rotation > 90) {
+        sticks.last().rotation = 90;
+
+        const [nextPlatform, perfectHit] = thePlatformTheStickHits();
+        if (nextPlatform) {
+          score += perfectHit ? 2 : 1;
+          scoreElement.innerText = score;
+          scoreElement.classList.add('score-update');
+          setTimeout(() => scoreElement.classList.remove('score-update'), 500);
+          playLandSound();
+          vibrate(40);
+
+          if (perfectHit) {
+            perfectElement.style.opacity = 1;
+            playPerfectSound();
+            vibrate([50, 50, 50]);
+            setTimeout(() => (perfectElement.style.opacity = 0), 1000);
+          }
+
+          generatePlatform();
+          generateTree();
+          generateTree();
+        }
+
+        phase = "walking";
+      }
+      break;
+    }
+    case "walking": {
+      const oldHeroX = heroX;
+      heroX += (timestamp - lastTimestamp) / walkingSpeed;
+      
+      if (Math.floor(oldHeroX / 15) < Math.floor(heroX / 15)) {
+        playWalkSound();
+      }
+
+      const [nextPlatform] = thePlatformTheStickHits();
+      if (nextPlatform) {
+        const maxHeroX = nextPlatform.x + nextPlatform.w - heroDistanceFromEdge;
+        if (heroX > maxHeroX) {
+          heroX = maxHeroX;
+          phase = "transitioning";
+        }
+      } else {
+        const maxHeroX = sticks.last().x + sticks.last().length + heroWidth;
+        if (heroX > maxHeroX) {
+          heroX = maxHeroX;
+          phase = "falling";
+          playFallSound();
+          vibrate(200);
+        }
+      }
+      break;
+    }
+    case "transitioning": {
+      sceneOffset += (timestamp - lastTimestamp) / transitioningSpeed;
+
+      const [nextPlatform] = thePlatformTheStickHits();
+      if (sceneOffset > nextPlatform.x + nextPlatform.w - paddingX) {
+        sticks.push({
+          x: nextPlatform.x + nextPlatform.w,
+          length: 0,
+          rotation: 0
+        });
+        phase = "waiting";
+      }
+      break;
+    }
+    case "falling": {
+      if (sticks.last().rotation < 180)
+        sticks.last().rotation += (timestamp - lastTimestamp) / turningSpeed;
+
+      heroY += (timestamp - lastTimestamp) / fallingSpeed;
+      const maxHeroY =
+        platformHeight + 100 + (window.innerHeight - canvasHeight) / 2;
+      if (heroY > maxHeroY) {
+        playGameOverSound();
+        vibrate([100, 50, 100, 50, 200]);
+        restartButton.style.display = "block";
+        return;
+      }
+      break;
+    }
+    default:
+      throw Error("Wrong phase");
+  }
+
+  draw();
+  window.requestAnimationFrame(animate);
+
+  lastTimestamp = timestamp;
+}
+
+function thePlatformTheStickHits() {
+  if (sticks.last().rotation != 90)
+    throw Error(`Stick is ${sticks.last().rotation}°`);
+  const stickFarX = sticks.last().x + sticks.last().length;
+
+  const platformTheStickHits = platforms.find(
+    (platform) => platform.x < stickFarX && stickFarX < platform.x + platform.w
+  );
+
+  if (
+    platformTheStickHits &&
+    platformTheStickHits.x + platformTheStickHits.w / 2 - perfectAreaSize / 2 <
+      stickFarX &&
+    stickFarX <
+      platformTheStickHits.x + platformTheStickHits.w / 2 + perfectAreaSize / 2
+  )
+    return [platformTheStickHits, true];
+
+  return [platformTheStickHits, false];
+}
+
+function draw() {
+  ctx.save();
+  ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
+  drawBackground();
+
+  ctx.translate(
+    (window.innerWidth - canvasWidth) / 2 - sceneOffset,
+    (window.innerHeight - canvasHeight) / 2
+  );
+
+  drawPlatforms();
+  drawHero();
+  drawSticks();
+
+  ctx.restore();
+}
+
+restartButton.addEventListener("click", function (event) {
+  event.preventDefault();
+  playLandSound();
+  vibrate(50);
+  resetGame();
+  restartButton.style.display = "none";
+});
+
+restartButton.addEventListener("touchstart", function (event) {
+  event.preventDefault();
+  playLandSound();
+  vibrate(50);
+  resetGame();
+  restartButton.style.display = "none";
+});
+
+function drawPlatforms() {
+  platforms.forEach(({ x, w }) => {
+    // Platform shadow
+    ctx.fillStyle = "rgba(0, 0, 0, 0.2)";
+    ctx.fillRect(
+      x + 5,
+      canvasHeight - platformHeight + 5,
+      w,
+      platformHeight + (window.innerHeight - canvasHeight) / 2
+    );
+    
+    // Platform gradient
+    const gradient = ctx.createLinearGradient(x, canvasHeight - platformHeight, x, canvasHeight);
+    gradient.addColorStop(0, "#2c3e50");
+    gradient.addColorStop(1, "#000000");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(
+      x,
+      canvasHeight - platformHeight,
+      w,
+      platformHeight + (window.innerHeight - canvasHeight) / 2
+    );
+    
+    // Platform highlight
+    ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
+    ctx.fillRect(x, canvasHeight - platformHeight, w, 3);
+
+    if (sticks.last().x < x) {
+      // Perfect area with glow
+      const time = Date.now() / 1000;
+      const pulse = Math.sin(time * 3) * 0.3 + 0.7;
+      
+      ctx.shadowColor = "red";
+      ctx.shadowBlur = 15 * pulse;
+      ctx.fillStyle = `rgba(255, 0, 0, ${pulse})`;
+      ctx.fillRect(
+        x + w / 2 - perfectAreaSize / 2,
+        canvasHeight - platformHeight,
+        perfectAreaSize,
+        perfectAreaSize
+      );
+      ctx.shadowBlur = 0;
+    }
+  });
+}
+
+function drawHero() {
+  ctx.save();
+  ctx.translate(
+    heroX - heroWidth / 2,
+    heroY + canvasHeight - platformHeight - heroHeight / 2
+  );
+
+  // Hero shadow
+  ctx.fillStyle = "rgba(0, 0, 0, 0.3)";
+  ctx.beginPath();
+  ctx.ellipse(0, 15, heroWidth / 2, 3, 0, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Body with gradient
+  const bodyGradient = ctx.createLinearGradient(-heroWidth / 2, -heroHeight / 2, heroWidth / 2, heroHeight / 2);
+  bodyGradient.addColorStop(0, "#2c3e50");
+  bodyGradient.addColorStop(1, "#000000");
+  ctx.fillStyle = bodyGradient;
+  drawRoundedRect(
+    -heroWidth / 2,
+    -heroHeight / 2,
+    heroWidth,
+    heroHeight - 4,
+    5
+  );
+
+  // Body highlight
+  ctx.fillStyle = "rgba(255, 255, 255, 0.2)";
+  ctx.fillRect(-heroWidth / 2 + 2, -heroHeight / 2 + 2, 3, heroHeight - 10);
+
+  // Legs
+  const legDistance = 5;
+  ctx.fillStyle = "#000";
+  ctx.beginPath();
+  ctx.arc(legDistance, 11.5, 3, 0, Math.PI * 2, false);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.arc(-legDistance, 11.5, 3, 0, Math.PI * 2, false);
+  ctx.fill();
+
+  // Eye with glow
+  ctx.shadowColor = "white";
+  ctx.shadowBlur = 5;
+  ctx.beginPath();
+  ctx.fillStyle = "white";
+  ctx.arc(5, -7, 3, 0, Math.PI * 2, false);
+  ctx.fill();
+  ctx.shadowBlur = 0;
+
+  // Headband
+  const bandGradient = ctx.createLinearGradient(-heroWidth / 2, -12, heroWidth / 2, -12);
+  bandGradient.addColorStop(0, "#ff0000");
+  bandGradient.addColorStop(0.5, "#ff4444");
+  bandGradient.addColorStop(1, "#ff0000");
+  ctx.fillStyle = bandGradient;
+  ctx.fillRect(-heroWidth / 2 - 1, -12, heroWidth + 2, 4.5);
+  
+  // Headband ribbons
+  ctx.fillStyle = "#cc0000";
+  ctx.beginPath();
+  ctx.moveTo(-9, -14.5);
+  ctx.lineTo(-17, -18.5);
+  ctx.lineTo(-14, -8.5);
+  ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-10, -10.5);
+  ctx.lineTo(-15, -3.5);
+  ctx.lineTo(-5, -7);
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function drawRoundedRect(x, y, width, height, radius) {
+  ctx.beginPath();
+  ctx.moveTo(x, y + radius);
+  ctx.lineTo(x, y + height - radius);
+  ctx.arcTo(x, y + height, x + radius, y + height, radius);
+  ctx.lineTo(x + width - radius, y + height);
+  ctx.arcTo(x + width, y + height, x + width, y + height - radius, radius);
+  ctx.lineTo(x + width, y + radius);
+  ctx.arcTo(x + width, y, x + width - radius, y, radius);
+  ctx.lineTo(x + radius, y);
+  ctx.arcTo(x, y, x, y + radius, radius);
+  ctx.fill();
+}
+
+function drawSticks() {
+  sticks.forEach((stick) => {
+    ctx.save();
+
+    ctx.translate(stick.x, canvasHeight - platformHeight);
+    ctx.rotate((Math.PI / 180) * stick.rotation);
+
+    // Stick shadow
+    ctx.strokeStyle = "rgba(0, 0, 0, 0.3)";
+    ctx.lineWidth = 4;
+    ctx.beginPath();
+    ctx.moveTo(2, 2);
+    ctx.lineTo(2, -stick.length + 2);
+    ctx.stroke();
+
+    // Stick gradient
+    const gradient = ctx.createLinearGradient(0, 0, 0, -stick.length);
+    gradient.addColorStop(0, "#8B4513");
+    gradient.addColorStop(1, "#D2691E");
+    ctx.strokeStyle = gradient;
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, -stick.length);
+    ctx.stroke();
+    
+    // Stick highlight
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(-1, 0);
+    ctx.lineTo(-1, -stick.length);
+    ctx.stroke();
+
+    ctx.restore();
+  });
+}
+
+function drawBackground() {
+  // Animated sky gradient
+  const time = Date.now() / 5000;
+  const skyGradient = ctx.createLinearGradient(0, 0, 0, window.innerHeight);
+  const color1 = `hsl(${100 + Math.sin(time) * 10}, 60%, 70%)`;
+  const color2 = `hsl(${40 + Math.sin(time) * 5}, 80%, 85%)`;
+  skyGradient.addColorStop(0, color1);
+  skyGradient.addColorStop(1, color2);
+  ctx.fillStyle = skyGradient;
+  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+
+  // Floating clouds
+  drawClouds();
+
+  drawHill(hill1BaseHeight, hill1Amplitude, hill1Stretch, "#95C629");
+  drawHill(hill2BaseHeight, hill2Amplitude, hill2Stretch, "#659F1C");
+
+  trees.forEach((tree) => drawTree(tree.x, tree.color));
+}
+
+function drawClouds() {
+  const time = Date.now() / 10000;
+  ctx.fillStyle = "rgba(255, 255, 255, 0.3)";
+  
+  for (let i = 0; i < 3; i++) {
+    const x = ((time * 50 + i * 300) % (window.innerWidth + 200)) - 100;
+    const y = 50 + i * 40;
+    
+    ctx.beginPath();
+    ctx.arc(x, y, 30, 0, Math.PI * 2);
+    ctx.arc(x + 25, y, 35, 0, Math.PI * 2);
+    ctx.arc(x + 50, y, 30, 0, Math.PI * 2);
+    ctx.fill();
+  }
+}
+
+function drawHill(baseHeight, amplitude, stretch, color) {
+  ctx.beginPath();
+  ctx.moveTo(0, window.innerHeight);
+  ctx.lineTo(0, getHillY(0, baseHeight, amplitude, stretch));
+  for (let i = 0; i < window.innerWidth; i++) {
+    ctx.lineTo(i, getHillY(i, baseHeight, amplitude, stretch));
+  }
+  ctx.lineTo(window.innerWidth, window.innerHeight);
+  ctx.fillStyle = color;
+  ctx.fill();
+}
+
+function drawTree(x, color) {
+  ctx.save();
+  ctx.translate(
+    (-sceneOffset * backgroundSpeedMultiplier + x) * hill1Stretch,
+    getTreeY(x, hill1BaseHeight, hill1Amplitude)
+  );
+
+  const treeTrunkHeight = 5;
+  const treeTrunkWidth = 2;
+  const treeCrownHeight = 25;
+  const treeCrownWidth = 10;
+
+  ctx.fillStyle = "#7D833C";
+  ctx.fillRect(
+    -treeTrunkWidth / 2,
+    -treeTrunkHeight,
+    treeTrunkWidth,
+    treeTrunkHeight
+  );
+
+  ctx.beginPath();
+  ctx.moveTo(-treeCrownWidth / 2, -treeTrunkHeight);
+  ctx.lineTo(0, -(treeTrunkHeight + treeCrownHeight));
+  ctx.lineTo(treeCrownWidth / 2, -treeTrunkHeight);
+  ctx.fillStyle = color;
+  ctx.fill();
+
+  ctx.restore();
+}
+
+function getHillY(windowX, baseHeight, amplitude, stretch) {
+  const sineBaseY = window.innerHeight - baseHeight;
+  return (
+    Math.sinus((sceneOffset * backgroundSpeedMultiplier + windowX) * stretch) *
+      amplitude +
+    sineBaseY
+  );
+}
+
+function getTreeY(x, baseHeight, amplitude) {
+  const sineBaseY = window.innerHeight - baseHeight;
+  return Math.sinus(x) * amplitude + sineBaseY;
+}
+  </script>
+</body>
+</html>
