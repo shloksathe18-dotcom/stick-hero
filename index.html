@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#667eea">
   <title>Stick Hero Game</title>
   <style>
 html,
@@ -63,6 +64,41 @@ canvas {
   animation: scorePop 0.5s ease-out;
 }
 
+#lives {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  font-size: 2.5em;
+  z-index: 10;
+  display: flex;
+  gap: 10px;
+}
+
+.heart {
+  display: inline-block;
+  animation: heartBeat 1.5s ease-in-out infinite;
+  transition: all 0.3s ease;
+  filter: drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.heart.lost {
+  opacity: 0.3;
+  filter: grayscale(100%) drop-shadow(2px 2px 4px rgba(0, 0, 0, 0.3));
+  animation: heartLost 0.5s ease-out;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  10% { transform: scale(1.1); }
+  20% { transform: scale(1); }
+}
+
+@keyframes heartLost {
+  0% { transform: scale(1) rotate(0deg); opacity: 1; }
+  50% { transform: scale(1.3) rotate(10deg); }
+  100% { transform: scale(0.8) rotate(0deg); opacity: 0.3; }
+}
+
 @keyframes scoreFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-5px); }
@@ -79,6 +115,13 @@ canvas {
     font-size: 1.5em;
     top: 15px;
     right: 15px;
+  }
+  
+  #lives {
+    font-size: 2em;
+    top: 15px;
+    left: 15px;
+    gap: 8px;
   }
 }
 
@@ -425,6 +468,11 @@ canvas {
   </div>
 
   <div class="container">
+    <div id="lives">
+      <span class="heart" id="heart1">❤️</span>
+      <span class="heart" id="heart2">❤️</span>
+      <span class="heart" id="heart3">❤️</span>
+    </div>
     <div id="score"></div>
     <canvas id="game" width="375" height="375"></canvas>
     <div id="introduction">
@@ -455,6 +503,7 @@ window.addEventListener('load', function() {
       clearInterval(interval);
       setTimeout(function() {
         document.getElementById('loading-screen').classList.add('hidden');
+        startBackgroundMusic();
       }, 500);
     }
   }, 150);
@@ -462,6 +511,8 @@ window.addEventListener('load', function() {
 
 // Sound effects using Web Audio API
 const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+let backgroundMusicGain;
+let isMusicPlaying = false;
 
 function playSound(frequency, duration, type = 'sine') {
   const oscillator = audioContext.createOscillator();
@@ -478,6 +529,58 @@ function playSound(frequency, duration, type = 'sine') {
   
   oscillator.start(audioContext.currentTime);
   oscillator.stop(audioContext.currentTime + duration);
+}
+
+// Background music
+function startBackgroundMusic() {
+  if (isMusicPlaying) return;
+  isMusicPlaying = true;
+  
+  backgroundMusicGain = audioContext.createGain();
+  backgroundMusicGain.gain.value = 0.15;
+  backgroundMusicGain.connect(audioContext.destination);
+  
+  playBackgroundLoop();
+}
+
+function playBackgroundLoop() {
+  if (!isMusicPlaying) return;
+  
+  const notes = [
+    { freq: 523.25, duration: 0.3 }, // C5
+    { freq: 587.33, duration: 0.3 }, // D5
+    { freq: 659.25, duration: 0.3 }, // E5
+    { freq: 698.46, duration: 0.3 }, // F5
+    { freq: 783.99, duration: 0.6 }, // G5
+    { freq: 659.25, duration: 0.3 }, // E5
+    { freq: 523.25, duration: 0.6 }, // C5
+    { freq: 587.33, duration: 0.3 }, // D5
+    { freq: 659.25, duration: 0.3 }, // E5
+    { freq: 523.25, duration: 0.6 }, // C5
+  ];
+  
+  let time = audioContext.currentTime;
+  
+  notes.forEach(note => {
+    const osc = audioContext.createOscillator();
+    const gain = audioContext.createGain();
+    
+    osc.connect(gain);
+    gain.connect(backgroundMusicGain);
+    
+    osc.frequency.value = note.freq;
+    osc.type = 'sine';
+    
+    gain.gain.setValueAtTime(0.1, time);
+    gain.gain.exponentialRampToValueAtTime(0.01, time + note.duration);
+    
+    osc.start(time);
+    osc.stop(time + note.duration);
+    
+    time += note.duration;
+  });
+  
+  setTimeout(() => playBackgroundLoop(), time * 1000 - audioContext.currentTime * 1000);
 }
 
 function playStretchSound() {
@@ -573,6 +676,7 @@ let sticks = [];
 let trees = [];
 
 let score = 0;
+let lives = 3;
 
 // Configuration
 const canvasWidth = 375;
@@ -622,6 +726,9 @@ const introductionElement = document.getElementById("introduction");
 const perfectElement = document.getElementById("perfect");
 const restartButton = document.getElementById("restart");
 const scoreElement = document.getElementById("score");
+const heart1 = document.getElementById("heart1");
+const heart2 = document.getElementById("heart2");
+const heart3 = document.getElementById("heart3");
 
 resetGame();
 
@@ -630,11 +737,17 @@ function resetGame() {
   lastTimestamp = undefined;
   sceneOffset = 0;
   score = 0;
+  lives = 3;
 
   introductionElement.style.opacity = 1;
   perfectElement.style.opacity = 0;
   restartButton.style.display = "none";
   scoreElement.innerText = score;
+  
+  // Reset hearts
+  heart1.classList.remove('lost');
+  heart2.classList.remove('lost');
+  heart3.classList.remove('lost');
 
   platforms = [{ x: 50, w: 50 }];
   generatePlatform();
@@ -697,6 +810,41 @@ function generatePlatform() {
     minimumWidth + Math.floor(Math.random() * (maximumWidth - minimumWidth));
 
   platforms.push({ x, w });
+}
+
+function updateLivesDisplay() {
+  if (lives === 2) {
+    heart3.classList.add('lost');
+  } else if (lives === 1) {
+    heart2.classList.add('lost');
+  } else if (lives === 0) {
+    heart1.classList.add('lost');
+  }
+}
+
+function resetPosition() {
+  // Reset to first platform
+  phase = "waiting";
+  lastTimestamp = undefined;
+  heroY = 0;
+  sceneOffset = 0;
+  
+  // Reset to starting platform
+  platforms = [{ x: 50, w: 50 }];
+  generatePlatform();
+  generatePlatform();
+  generatePlatform();
+  generatePlatform();
+  
+  heroX = platforms[0].x + platforms[0].w - heroDistanceFromEdge;
+  
+  // Reset stick
+  sticks = [{ x: platforms[0].x + platforms[0].w, length: 0, rotation: 0 }];
+  
+  // Show introduction again
+  introductionElement.style.opacity = 1;
+  
+  draw();
 }
 
 window.addEventListener("keydown", function (event) {
@@ -888,10 +1036,23 @@ function animate(timestamp) {
       const maxHeroY =
         platformHeight + 100 + (window.innerHeight - canvasHeight) / 2;
       if (heroY > maxHeroY) {
-        playGameOverSound();
-        vibrate([100, 50, 100, 50, 200]);
-        restartButton.style.display = "block";
-        return;
+        lives--;
+        updateLivesDisplay();
+        
+        if (lives <= 0) {
+          playGameOverSound();
+          vibrate([100, 50, 100, 50, 200]);
+          restartButton.style.display = "block";
+          return;
+        } else {
+          // Continue game with one less life
+          playFallSound();
+          vibrate([100, 50, 100]);
+          setTimeout(() => {
+            resetPosition();
+          }, 500);
+          return;
+        }
       }
       break;
     }
