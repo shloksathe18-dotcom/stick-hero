@@ -709,6 +709,11 @@ window.addEventListener("keydown", function (event) {
 
 // Mouse events
 window.addEventListener("mousedown", function (event) {
+  // Ignore clicks on the restart button
+  if (event.target.id === 'restart' || event.target.closest('#restart')) {
+    return;
+  }
+  
   if (phase == "waiting") {
     lastTimestamp = undefined;
     introductionElement.style.opacity = 0;
@@ -720,6 +725,11 @@ window.addEventListener("mousedown", function (event) {
 });
 
 window.addEventListener("mouseup", function (event) {
+  // Ignore clicks on the restart button
+  if (event.target.id === 'restart' || event.target.closest('#restart')) {
+    return;
+  }
+  
   if (phase == "stretching") {
     phase = "turning";
     vibrate(30);
@@ -728,6 +738,11 @@ window.addEventListener("mouseup", function (event) {
 
 // Touch events for mobile
 window.addEventListener("touchstart", function (event) {
+  // Ignore touches on the restart button
+  if (event.target.id === 'restart' || event.target.closest('#restart')) {
+    return;
+  }
+  
   event.preventDefault();
   if (phase == "waiting") {
     lastTimestamp = undefined;
@@ -740,6 +755,11 @@ window.addEventListener("touchstart", function (event) {
 }, { passive: false });
 
 window.addEventListener("touchend", function (event) {
+  // Ignore touches on the restart button
+  if (event.target.id === 'restart' || event.target.closest('#restart')) {
+    return;
+  }
+  
   event.preventDefault();
   if (phase == "stretching") {
     phase = "turning";
@@ -926,6 +946,7 @@ function draw() {
 
 restartButton.addEventListener("click", function (event) {
   event.preventDefault();
+  event.stopPropagation();
   playLandSound();
   vibrate(50);
   resetGame();
@@ -934,11 +955,12 @@ restartButton.addEventListener("click", function (event) {
 
 restartButton.addEventListener("touchstart", function (event) {
   event.preventDefault();
+  event.stopPropagation();
   playLandSound();
   vibrate(50);
   resetGame();
   restartButton.style.display = "none";
-});
+}, { passive: false });
 
 function drawPlatforms() {
   platforms.forEach(({ x, w }) => {
