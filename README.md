@@ -78,6 +78,8 @@ Works on all modern browsers that support:
 
 **Game made by Shlok**
 
+GitHub: [https://github.com/shloksathe18-dotcom](https://github.com/shloksathe18-dotcom)
+
 ## License
 
 Feel free to use and modify this game for personal or educational purposes.
